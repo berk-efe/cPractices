@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
 typedef struct{
     int id;
     bool done;
@@ -12,50 +14,59 @@ typedef struct{
 
 Task *DB[16] = { NULL };
 
-int load_db(FILE *db);
+int load_db(void);
 int task_count(void);
+int add_new_task(void);
+int create_task(int id, int done, char *desc);
+int print_db(void);
+int save_db(void);
 
 int main(void){
     printf("TODO\n\n");
 
-    FILE *dbptr = fopen("db.csv", "r");
-    if(dbptr == NULL){
-        printf("Unable to open file.\n");
+    // OPEN FILE
+
+
+    // LOAD FILE
+    if(load_db()){
+        printf("Couldnt load the db.");
+        return 2;
     }
 
-    load_db(dbptr);
+    // PRINT THE DB
+    print_db();
 
-    for (int i=0; i<16; i++){
-        Task *task = DB[i];
-        if(task != NULL){
-            printf("[%d] %d. -> %s\n", task->done, task->id, task->desc);
-        }
-    }
+    add_new_task();
+
+    print_db();
 
     return 0;
 }
 
-int load_db(FILE *db){
+int load_db(void){
     
+    FILE *db = fopen("db.csv", "r");
+    if(db == NULL){
+        printf("Unable to open file.\n");
+        return 1;
+    }
+
     int task_id;
     int task_bool;
     char *task_desc = malloc(256 * sizeof(char));
+    if(task_desc == NULL){
+        printf("Allocation error.");
+        return 3;
+    }
     
     fscanf(db, "%*[^\n]\n");
     
     while(fscanf(db, "%d,%d,%[^\n]s", &task_id, &task_bool, task_desc) == 3){
-        Task *task = malloc(sizeof(Task));
-        if(task == NULL){
-            printf("Allocation error.");
-            return 1;
+        if(create_task(task_id, task_bool, task_desc) != 0){
+            printf("Couldnt create task.");
+            return 4;
         }
-        
-        
-        task->id = task_id;
-        task->done = task_bool;
-        strcpy(task->desc, task_desc);
 
-        DB[task_id] = task;
     }
     
     free(task_desc);
@@ -74,5 +85,81 @@ int task_count(void){
     }
 
     return count;
+}
 
+int add_new_task(void){
+    if(task_count() >= 16){
+        printf("Too many tasks");
+        return 5;
+    }
+
+    char desc[128];
+    printf("Enter task: ");
+    if (fgets(desc, sizeof(desc), stdin)) {
+        // switch \n with \0
+        char *p = strchr(desc, '\n');
+        if (p) *p = '\0';
+        
+    } else {
+        printf("Input error.\n");
+        return 6;
+    }
+    
+    printf("%s\n", desc);
+    
+    
+    int end_of_the_db = task_count();
+    if(create_task(end_of_the_db, 0, desc) != 0){
+        printf("Couldnt create task.");
+        return 4;
+    }
+    
+    return 0;
+}
+
+int create_task(int id, int done, char *desc){
+    Task *task = malloc(sizeof(Task));
+    if(task == NULL){
+        printf("Allocation error.");
+        return 3;
+    }
+
+    task->id = id;
+    task->done = done;
+    strcpy(task->desc, desc);
+
+    DB[id] = task;
+
+    if(save_db() != 0) return 7;
+
+    return 0;
+}
+
+int print_db(void){
+    for (int i=0; i<16; i++){
+        Task *task = DB[i];
+        if(task != NULL){
+            printf("[%d] %d. -> %s\n", task->done, task->id, task->desc);
+        }
+    }
+
+    return 0;
+}
+
+int save_db(void){
+    FILE *fptr = fopen("db.csv", "w");
+    if(fptr == NULL){
+        printf("Unable to open file.");
+        return 1;
+    }
+
+    fprintf(fptr, "id,tick,task_desc\n");
+
+    for(int i=0; i<task_count(); i++){
+        Task *task = DB[i];
+        fprintf(fptr, "%d,%d,%s\n", task->id, task->done, task->desc);
+
+    }
+
+    return 0;
 }

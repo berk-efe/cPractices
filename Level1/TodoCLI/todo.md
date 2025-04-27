@@ -74,3 +74,14 @@ Print the help text.
 
 ## [6] Quit.
 Quit the program.
+
+
+# Error Codes
+
+### return 1: Unable to open file.
+### return 2: Couldnt load the db.
+### return 3: Allocation error.
+### return 4: Couldnt create task.
+### return 5: Too many tasks.
+### return 6: Input error.
+### return 7: Couldnt save db.
