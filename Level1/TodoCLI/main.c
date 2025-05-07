@@ -20,11 +20,12 @@ int add_new_task(void);
 int create_task(int id, int done, char *desc);
 int print_db(void);
 int save_db(void);
+int print_menu(void);
+int toggle_done_status(int done);
 
 int main(void){
     printf("TODO\n\n");
 
-    // OPEN FILE
 
 
     // LOAD FILE
@@ -33,12 +34,11 @@ int main(void){
         return 2;
     }
 
+    int cont;
     // PRINT THE DB
     print_db();
-
-    add_new_task();
-
-    print_db();
+    printf("\n");
+    print_menu();
 
     return 0;
 }
@@ -135,6 +135,30 @@ int create_task(int id, int done, char *desc){
     return 0;
 }
 
+int delete_task(){
+    int id;
+
+    // check if there is any task at all
+    if(task_count() < 1){
+        printf("Not enough tasks.");
+        return 9;
+    }
+
+    printf("Task id(up to %d): ", task_count());
+    scanf("%d", &id);
+
+    if(id <= task_count()-1){
+
+        free(DB[id]);
+        DB[id] = NULL;
+
+    }else {
+        printf("Option out of range.");
+        return 8;
+    }
+
+}
+
 int print_db(void){
     for (int i=0; i<16; i++){
         Task *task = DB[i];
@@ -161,5 +185,59 @@ int save_db(void){
 
     }
 
+    fclose(fptr);
+
+    return 0;
+}
+
+int print_menu(void){
+    // 1 Add new task
+    // 2 Remove existing task
+    // 3 Toggle done status of existing task
+    
+    // 4 Help
+    // 5 Quit
+
+    printf("[1] Add new task\n");
+    printf("[2] Remove existing task\n");
+    printf("[3] Toggle done status of existing task\n");
+
+    printf("[4] Help\n");
+    printf("[5] Quit\n");
+    printf("\n");
+
+    char input[16];
+    int opt = 0;
+    
+    printf("Select Option (1-5): ");
+    if (fgets(input, sizeof(input), stdin)) {
+        opt = atoi(input);
+    } else {
+        printf("Input error.\n");
+        return 1;
+    }
+    
+
+    if(1 <= opt <= 5){
+
+        switch (opt)
+        {
+        case 1:
+            add_new_task();
+            
+            break;
+        
+        default:
+            break;
+        }
+
+    }else {
+        printf("Option out of range.");
+        return 1;
+    }
+
+}
+
+int toggle_done_status(int done){
     return 0;
 }

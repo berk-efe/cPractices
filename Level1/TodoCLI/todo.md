@@ -85,3 +85,5 @@ Quit the program.
 ### return 5: Too many tasks.
 ### return 6: Input error.
 ### return 7: Couldnt save db.
+### return 8: Option out of range.
+### return 9: Not enough tasks.
