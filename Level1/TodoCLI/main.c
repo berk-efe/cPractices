@@ -21,7 +21,9 @@ int create_task(int id, int done, char *desc);
 int print_db(void);
 int save_db(void);
 int print_menu(void);
-int toggle_done_status(int done);
+int toggle_done_status(void);
+
+int get_int_input(char *label);
 
 int main(void){
     printf("TODO\n\n");
@@ -38,7 +40,9 @@ int main(void){
     // PRINT THE DB
     print_db();
     printf("\n");
-    print_menu();
+    if(print_menu() == 66){
+        return 0;
+    }
 
     return 0;
 }
@@ -206,17 +210,9 @@ int print_menu(void){
     printf("[5] Quit\n");
     printf("\n");
 
-    char input[16];
-    int opt = 0;
-    
-    printf("Select Option (1-5): ");
-    if (fgets(input, sizeof(input), stdin)) {
-        opt = atoi(input);
-    } else {
-        printf("Input error.\n");
-        return 1;
-    }
-    
+    int opt;
+   
+    opt = get_int_input("Select Option (1-5): ");
 
     if(1 <= opt <= 5){
 
@@ -226,6 +222,13 @@ int print_menu(void){
             add_new_task();
             
             break;
+
+        case 3:
+            toggle_done_status();
+            break;
+
+        case 5:
+            return 66; // quit
         
         default:
             break;
@@ -236,8 +239,43 @@ int print_menu(void){
         return 1;
     }
 
+    return 0;
+
 }
 
-int toggle_done_status(int done){
+int toggle_done_status(void){
+    // get id of task
+    if(task_count() < 1){
+        printf("Not enough tasks.");
+        return 9;
+    }
+
+    int opt;
+    char buffer[64];
+
+    sprintf(buffer, "Id of the task to toggle(0-%d): ", task_count()-1);
+    opt = get_int_input(buffer);
+
+    DB[opt]->done = !DB[opt]->done;
+    save_db();
+
     return 0;
+}
+
+
+int get_int_input(char *label){
+
+    char input[16];
+    int opt = 0;
+
+    printf(label);
+    if (fgets(input, sizeof(input), stdin)) {
+        opt = atoi(input);
+    } else {
+        printf("Input error.\n");
+        return -1;
+    }
+
+    return opt;
+
 }
