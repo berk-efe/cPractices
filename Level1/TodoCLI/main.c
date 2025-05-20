@@ -140,21 +140,26 @@ int create_task(int id, int done, char *desc){
 }
 
 int delete_task(){
-    int id;
-
     // check if there is any task at all
     if(task_count() < 1){
         printf("Not enough tasks.");
         return 9;
     }
+    
 
-    printf("Task id(up to %d): ", task_count());
-    scanf("%d", &id);
+    int opt;
+    char buffer[64];
 
-    if(id <= task_count()-1){
+    
+    sprintf(buffer, "Id of the task to delete(0-%d): ", task_count()-1);
+    opt = get_int_input(buffer);
 
-        free(DB[id]);
-        DB[id] = NULL;
+
+    if(opt <= task_count()-1){
+
+        DB[opt] = NULL;
+        free(DB[opt]);
+        save_db();
 
     }else {
         printf("Option out of range.");
@@ -194,6 +199,27 @@ int save_db(void){
     return 0;
 }
 
+
+int toggle_done_status(void){
+    // get id of task
+    if(task_count() < 1){
+        printf("Not enough tasks.");
+        return 9;
+    }
+
+    int opt;
+    char buffer[64];
+
+    sprintf(buffer, "Id of the task to toggle(0-%d): ", task_count()-1);
+    opt = get_int_input(buffer);
+
+    DB[opt]->done = !DB[opt]->done;
+    save_db();
+
+    return 0;
+}
+
+
 int print_menu(void){
     // 1 Add new task
     // 2 Remove existing task
@@ -220,7 +246,10 @@ int print_menu(void){
         {
         case 1:
             add_new_task();
-            
+            break;
+        
+        case 2:
+            delete_task();
             break;
 
         case 3:
@@ -242,26 +271,6 @@ int print_menu(void){
     return 0;
 
 }
-
-int toggle_done_status(void){
-    // get id of task
-    if(task_count() < 1){
-        printf("Not enough tasks.");
-        return 9;
-    }
-
-    int opt;
-    char buffer[64];
-
-    sprintf(buffer, "Id of the task to toggle(0-%d): ", task_count()-1);
-    opt = get_int_input(buffer);
-
-    DB[opt]->done = !DB[opt]->done;
-    save_db();
-
-    return 0;
-}
-
 
 int get_int_input(char *label){
 
