@@ -18,17 +18,17 @@ int load_db(void);
 int task_count(void);
 int add_new_task(void);
 int create_task(int id, int done, char *desc);
+int delete_task(void);
 int print_db(void);
 int save_db(void);
 int print_menu(void);
 int toggle_done_status(void);
 
 int get_int_input(char *label);
+void clear_input_buffer(void);
 
 int main(void){
     printf("TODO\n\n");
-
-
 
     // LOAD FILE
     if(load_db()){
@@ -46,6 +46,7 @@ int main(void){
 
     return 0;
 }
+
 
 int load_db(void){
     
@@ -99,16 +100,17 @@ int add_new_task(void){
 
     char desc[128];
     printf("Enter task: ");
+    clear_input_buffer(); // Clear any leftover input
     if (fgets(desc, sizeof(desc), stdin)) {
         // switch \n with \0
         char *p = strchr(desc, '\n');
         if (p) *p = '\0';
-        
+
     } else {
         printf("Input error.\n");
         return 6;
     }
-    
+
     printf("%s\n", desc);
     
     
@@ -139,7 +141,7 @@ int create_task(int id, int done, char *desc){
     return 0;
 }
 
-int delete_task(){
+int delete_task(void){
     // check if there is any task at all
     if(task_count() < 1){
         printf("Not enough tasks.");
@@ -155,10 +157,9 @@ int delete_task(){
     opt = get_int_input(buffer);
 
 
-    if(opt <= task_count()-1){
-
-        DB[opt] = NULL;
+    if(opt <= task_count()-1 && opt >= 0){
         free(DB[opt]);
+        DB[opt] = NULL;
         save_db();
 
     }else {
@@ -166,6 +167,7 @@ int delete_task(){
         return 8;
     }
 
+    return 0;
 }
 
 int print_db(void){
@@ -213,8 +215,13 @@ int toggle_done_status(void){
     sprintf(buffer, "Id of the task to toggle(0-%d): ", task_count()-1);
     opt = get_int_input(buffer);
 
-    DB[opt]->done = !DB[opt]->done;
-    save_db();
+    if(opt >= 0 && opt <= task_count()-1 && DB[opt] != NULL){
+        DB[opt]->done = !DB[opt]->done;
+        save_db();
+    } else {
+        printf("Invalid task ID or task doesn't exist.\n");
+        return 8;
+    }
 
     return 0;
 }
@@ -240,7 +247,7 @@ int print_menu(void){
    
     opt = get_int_input("Select Option (1-5): ");
 
-    if(1 <= opt <= 5){
+    if(opt >= 1 && opt <= 5){
 
         switch (opt)
         {
@@ -287,4 +294,9 @@ int get_int_input(char *label){
 
     return opt;
 
+}
+
+void clear_input_buffer(void){
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
